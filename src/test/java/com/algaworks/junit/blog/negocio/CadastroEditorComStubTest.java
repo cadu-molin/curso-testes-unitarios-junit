@@ -4,14 +4,12 @@ import com.algaworks.junit.blog.exception.RegraNegocioException;
 import com.algaworks.junit.blog.modelo.Editor;
 import org.junit.jupiter.api.*;
 
-import javax.mail.Message;
-
 import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
-class CadastroEditorTest {
+class CadastroEditorComStubTest {
 
     CadastroEditor cadastroEditor;
     ArmazenamentoEditorFixoEmMemoria armazenamentoEditorFixoEmMemoria;
