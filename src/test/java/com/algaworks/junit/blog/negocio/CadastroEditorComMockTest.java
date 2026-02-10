@@ -14,7 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
@@ -56,5 +56,14 @@ public class CadastroEditorComMockTest {
         cadastroEditor.criar(editor);
 
         verify(armazenamentoEditor, times(1)).salvar(eq(editor));
+    }
+
+    @Test
+    void Dado_um_editor_valido_Quando_criar_e_lancar_uma_exception_ao_salvar_Entao_nao_deve_enviar_email() {
+        when(armazenamentoEditor.salvar(editor)).thenThrow(RuntimeException.class);
+
+        assertAll("Não deve envial e-mail, quando lançar exception do armazenamento",
+                () -> {assertThrows(RuntimeException.class, () -> {cadastroEditor.criar(editor);});},
+                () -> verify(gerenciadorEnvioEmail, never()).enviarEmail(any()));
     }
 }
