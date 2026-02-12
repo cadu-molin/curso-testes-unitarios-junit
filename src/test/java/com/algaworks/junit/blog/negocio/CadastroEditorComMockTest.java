@@ -7,9 +7,7 @@ import org.junit.jupiter.api.DisplayNameGeneration;
 import org.junit.jupiter.api.DisplayNameGenerator;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
@@ -32,6 +30,9 @@ public class CadastroEditorComMockTest {
 
     @InjectMocks
     CadastroEditor cadastroEditor;
+
+    @Captor
+    ArgumentCaptor<Mensagem> mensagemArgumentCaptor;
 
     @BeforeEach
     void init() {
@@ -65,5 +66,16 @@ public class CadastroEditorComMockTest {
         assertAll("Não deve envial e-mail, quando lançar exception do armazenamento",
                 () -> {assertThrows(RuntimeException.class, () -> {cadastroEditor.criar(editor);});},
                 () -> verify(gerenciadorEnvioEmail, never()).enviarEmail(any()));
+    }
+
+    @Test
+    void Dado_um_editor_valido_Quando_cadastrar_Entao_deve_enviar_email_com_destino_ao_editor() {
+        Editor editorSalvo = cadastroEditor.criar(editor);
+
+        verify(gerenciadorEnvioEmail).enviarEmail(mensagemArgumentCaptor.capture());
+
+        Mensagem mensagem = mensagemArgumentCaptor.getValue();
+
+        assertEquals(editorSalvo.getEmail(), mensagem.getDestinatario());
     }
 }
