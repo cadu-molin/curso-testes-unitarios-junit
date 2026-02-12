@@ -20,7 +20,8 @@ import static org.mockito.Mockito.*;
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class CadastroEditorComMockTest {
 
-    Editor editor;
+    @Spy
+    Editor editor = new Editor(null, "Carlos", "carlos@gmail.com", BigDecimal.TEN, true);
 
     @Mock
     ArmazenamentoEditor armazenamentoEditor;
@@ -36,8 +37,6 @@ public class CadastroEditorComMockTest {
 
     @BeforeEach
     void init() {
-        editor = new Editor(null, "Carlos", "carlos@gmail.com", BigDecimal.TEN, true);
-
         when(armazenamentoEditor.salvar(any(Editor.class))).thenAnswer(invocacao -> {
             Editor editorPassado = invocacao.getArgument(0, Editor.class);
             editorPassado.setId(1L);
@@ -77,5 +76,12 @@ public class CadastroEditorComMockTest {
         Mensagem mensagem = mensagemArgumentCaptor.getValue();
 
         assertEquals(editorSalvo.getEmail(), mensagem.getDestinatario());
+    }
+
+    @Test
+    void Dado_um_editor_valido_Quando_cadastrar_Entao_deve_verificar_o_email() {
+        cadastroEditor.criar(editor);
+
+        verify(editor, atLeast(1)).getEmail();
     }
 }
