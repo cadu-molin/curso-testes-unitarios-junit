@@ -1,12 +1,10 @@
 package com.algaworks.junit.blog.negocio;
 
 import com.algaworks.junit.blog.armazenamento.ArmazenamentoEditor;
+import com.algaworks.junit.blog.exception.EditorNaoEncontradoException;
 import com.algaworks.junit.blog.exception.RegraNegocioException;
 import com.algaworks.junit.blog.modelo.Editor;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayNameGeneration;
-import org.junit.jupiter.api.DisplayNameGenerator;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -22,9 +20,6 @@ import static org.mockito.Mockito.*;
 @DisplayNameGeneration(DisplayNameGenerator.ReplaceUnderscores.class)
 public class CadastroEditorComMockTest {
 
-    @Spy
-    Editor editor = new Editor(null, "Carlos", "carlos@gmail.com", BigDecimal.TEN, true);
-
     @Mock
     ArmazenamentoEditor armazenamentoEditor;
 
@@ -37,76 +32,139 @@ public class CadastroEditorComMockTest {
     @Captor
     ArgumentCaptor<Mensagem> mensagemArgumentCaptor;
 
-    @BeforeEach
-    void init() {
-        when(armazenamentoEditor.salvar(any(Editor.class))).thenAnswer(invocacao -> {
-            Editor editorPassado = invocacao.getArgument(0, Editor.class);
-            editorPassado.setId(1L);
-            return editorPassado;
-        });
+    @Nested
+    class CadastroComEditorValido {
+
+        @Spy
+        Editor editor = new Editor(null, "Carlos", "carlos@gmail.com", BigDecimal.TEN, true);
+
+        @BeforeEach
+        void init() {
+            when(armazenamentoEditor.salvar(any(Editor.class))).thenAnswer(invocacao -> {
+                Editor editorPassado = invocacao.getArgument(0, Editor.class);
+                editorPassado.setId(1L);
+                return editorPassado;
+            });
+        }
+
+        @Test
+        void Dado_um_editor_valido_Quando_criar_Entao_deve_retornar_um_id_de_cadastro() {
+            Editor editorSalvo = cadastroEditor.criar(editor);
+
+            assertEquals(1L, editorSalvo.getId());
+        }
+
+        @Test
+        void Dado_um_editor_valido_Quando_criar_Entao_deve_salvar_metodo_salvar_do_armazenamento() {
+            cadastroEditor.criar(editor);
+
+            verify(armazenamentoEditor, times(1)).salvar(eq(editor));
+        }
+
+        @Test
+        void Dado_um_editor_valido_Quando_criar_e_lancar_uma_exception_ao_salvar_Entao_nao_deve_enviar_email() {
+            when(armazenamentoEditor.salvar(editor)).thenThrow(RuntimeException.class);
+
+            assertAll("Não deve envial e-mail, quando lançar exception do armazenamento",
+                    () -> {assertThrows(RuntimeException.class, () -> {cadastroEditor.criar(editor);});},
+                    () -> verify(gerenciadorEnvioEmail, never()).enviarEmail(any()));
+        }
+
+        @Test
+        void Dado_um_editor_valido_Quando_cadastrar_Entao_deve_enviar_email_com_destino_ao_editor() {
+            Editor editorSalvo = cadastroEditor.criar(editor);
+
+            verify(gerenciadorEnvioEmail).enviarEmail(mensagemArgumentCaptor.capture());
+
+            Mensagem mensagem = mensagemArgumentCaptor.getValue();
+
+            assertEquals(editorSalvo.getEmail(), mensagem.getDestinatario());
+        }
+
+        @Test
+        void Dado_um_editor_valido_Quando_cadastrar_Entao_deve_verificar_o_email() {
+            cadastroEditor.criar(editor);
+
+            verify(editor, atLeast(1)).getEmail();
+        }
+
+        @Test
+        void Dado_um_editor_com_email_existente_Quando_cadastrar_Entao_deve_lancar_exception() {
+            when(armazenamentoEditor.encontrarPorEmail("carlos@gmail.com"))
+                    .thenReturn(Optional.empty())
+                    .thenReturn(Optional.of(editor));
+
+            Editor editorComEmailExistente = new Editor(null, "Carlos", "carlos@gmail.com", BigDecimal.TEN, true);
+
+            cadastroEditor.criar(editor);
+
+            assertThrows(RegraNegocioException.class, () -> cadastroEditor.criar(editorComEmailExistente));
+        }
+
+        @Test
+        void Dado_um_editor_valido_Quando_cadastrar_Entao_deve_enviar_email_apos_salvar() {
+            cadastroEditor.criar(editor);
+
+            InOrder inOrder = inOrder(armazenamentoEditor, gerenciadorEnvioEmail);
+
+            inOrder.verify(armazenamentoEditor, times(1)).salvar(editor);
+            inOrder.verify(gerenciadorEnvioEmail, times(1)).enviarEmail(any(Mensagem.class));
+        }
     }
 
-    @Test
-    void Dado_um_editor_valido_Quando_criar_Entao_deve_retornar_um_id_de_cadastro() {
-        Editor editorSalvo = cadastroEditor.criar(editor);
+    @Nested
+    class CadastroComEditorNull {
+        @Test
+        void Dado_um_editor_null_Quando_cadastrar_Entao_deve_lancar_exception() {
+            assertThrows(NullPointerException.class, () -> cadastroEditor.criar(null));
 
-        assertEquals(1L, editorSalvo.getId());
+            verify(armazenamentoEditor, never()).salvar(any());
+            verify(gerenciadorEnvioEmail, never()).enviarEmail(any());
+        }
     }
 
-    @Test
-    void Dado_um_editor_valido_Quando_criar_Entao_deve_salvar_metodo_salvar_do_armazenamento() {
-        cadastroEditor.criar(editor);
+    @Nested
+    class EdicaoComEditorValido {
 
-        verify(armazenamentoEditor, times(1)).salvar(eq(editor));
+        @Spy
+        Editor editor = new Editor(1L, "Carlos", "carlos@gmail.com", BigDecimal.TEN, true);
+
+        @BeforeEach
+        void init() {
+            when(armazenamentoEditor.salvar(editor)).thenAnswer(invocacao -> invocacao.getArgument(0, Editor.class));
+            when(armazenamentoEditor.encontrarPorId(1L)).thenReturn(Optional.of(editor));
+        }
+
+        @Test
+        void Dado_um_editor_valido_Quando_editar_Entao_deve_alterar_editor_salvo() {
+            Editor editorAtualizado = new Editor(1L, "Carlos", "carlos@gmail.com", BigDecimal.ZERO, false);
+
+            cadastroEditor.editar(editorAtualizado);
+
+            verify(editor, times(1)).atualizarComDados(editorAtualizado);
+
+            InOrder inOrder = Mockito.inOrder(editor, armazenamentoEditor);
+
+            inOrder.verify(editor, times(1)).atualizarComDados(editorAtualizado);
+            inOrder.verify(armazenamentoEditor, times(1)).salvar(editor);
+        }
     }
 
-    @Test
-    void Dado_um_editor_valido_Quando_criar_e_lancar_uma_exception_ao_salvar_Entao_nao_deve_enviar_email() {
-        when(armazenamentoEditor.salvar(editor)).thenThrow(RuntimeException.class);
+    @Nested
+    class EdicaoComEditorInexistente {
 
-        assertAll("Não deve envial e-mail, quando lançar exception do armazenamento",
-                () -> {assertThrows(RuntimeException.class, () -> {cadastroEditor.criar(editor);});},
-                () -> verify(gerenciadorEnvioEmail, never()).enviarEmail(any()));
-    }
+        Editor editor = new Editor(100L, "Carlos", "carlos@gmail.com", BigDecimal.TEN, true);
 
-    @Test
-    void Dado_um_editor_valido_Quando_cadastrar_Entao_deve_enviar_email_com_destino_ao_editor() {
-        Editor editorSalvo = cadastroEditor.criar(editor);
+        @BeforeEach
+        void init() {
+            when(armazenamentoEditor.encontrarPorId(100L)).thenReturn(Optional.empty());
+        }
 
-        verify(gerenciadorEnvioEmail).enviarEmail(mensagemArgumentCaptor.capture());
+        @Test
+        void Dado_um_editor__que_nao_existe_Quando_editar_Entao_deve_lancar_exception() {
+            assertThrows(EditorNaoEncontradoException.class, () -> cadastroEditor.editar(editor));
 
-        Mensagem mensagem = mensagemArgumentCaptor.getValue();
-
-        assertEquals(editorSalvo.getEmail(), mensagem.getDestinatario());
-    }
-
-    @Test
-    void Dado_um_editor_valido_Quando_cadastrar_Entao_deve_verificar_o_email() {
-        cadastroEditor.criar(editor);
-
-        verify(editor, atLeast(1)).getEmail();
-    }
-
-    @Test
-    void Dado_um_editor_com_email_existente_Quando_cadastrar_Entao_deve_lancar_exception() {
-        when(armazenamentoEditor.encontrarPorEmail("carlos@gmail.com"))
-                .thenReturn(Optional.empty())
-                .thenReturn(Optional.of(editor));
-
-        Editor editorComEmailExistente = new Editor(null, "Carlos", "carlos@gmail.com", BigDecimal.TEN, true);
-
-        cadastroEditor.criar(editor);
-
-        assertThrows(RegraNegocioException.class, () -> cadastroEditor.criar(editorComEmailExistente));
-    }
-
-    @Test
-    void Dado_um_editor_valido_Quando_cadastrar_Entao_deve_enviar_email_apos_salvar() {
-        cadastroEditor.criar(editor);
-
-        InOrder inOrder = inOrder(armazenamentoEditor, gerenciadorEnvioEmail);
-
-        inOrder.verify(armazenamentoEditor, times(1)).salvar(editor);
-        inOrder.verify(gerenciadorEnvioEmail, times(1)).enviarEmail(any(Mensagem.class));
+            verify(armazenamentoEditor, never()).salvar(any(Editor.class));
+        }
     }
 }
