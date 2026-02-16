@@ -36,7 +36,7 @@ public class CadastroEditorComMockTest {
     class CadastroComEditorValido {
 
         @Spy
-        Editor editor = new Editor(null, "Carlos", "carlos@gmail.com", BigDecimal.TEN, true);
+        Editor editor = EditorTestData.umEditorNovo();
 
         @BeforeEach
         void init() {
@@ -94,7 +94,7 @@ public class CadastroEditorComMockTest {
                     .thenReturn(Optional.empty())
                     .thenReturn(Optional.of(editor));
 
-            Editor editorComEmailExistente = new Editor(null, "Carlos", "carlos@gmail.com", BigDecimal.TEN, true);
+            Editor editorComEmailExistente = EditorTestData.umEditorNovo();
 
             cadastroEditor.criar(editor);
 
@@ -127,7 +127,7 @@ public class CadastroEditorComMockTest {
     class EdicaoComEditorValido {
 
         @Spy
-        Editor editor = new Editor(1L, "Carlos", "carlos@gmail.com", BigDecimal.TEN, true);
+        Editor editor = EditorTestData.umEditorExistente();
 
         @BeforeEach
         void init() {
@@ -137,7 +137,10 @@ public class CadastroEditorComMockTest {
 
         @Test
         void Dado_um_editor_valido_Quando_editar_Entao_deve_alterar_editor_salvo() {
-            Editor editorAtualizado = new Editor(1L, "Carlos", "carlos@gmail.com", BigDecimal.ZERO, false);
+            Editor editorAtualizado = EditorTestData.umEditorExistente();
+
+            editorAtualizado.setValorPagoPorPalavra(BigDecimal.ZERO);
+            editorAtualizado.setPremium(false);
 
             cadastroEditor.editar(editorAtualizado);
 
@@ -153,7 +156,7 @@ public class CadastroEditorComMockTest {
     @Nested
     class EdicaoComEditorInexistente {
 
-        Editor editor = new Editor(100L, "Carlos", "carlos@gmail.com", BigDecimal.TEN, true);
+        Editor editor = EditorTestData.umEditorInexistente();
 
         @BeforeEach
         void init() {
