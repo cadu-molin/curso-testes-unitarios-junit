@@ -1,16 +1,12 @@
 package com.algaworks.junit.utilidade;
 
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import org.junit.jupiter.params.shadow.com.univocity.parsers.annotations.Validate;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.assertj.core.api.Assertions.*;
 
 @DisplayName("Testes no utilitário saudação")
 class SaudacaoUtilTest {
@@ -56,7 +52,11 @@ class SaudacaoUtilTest {
     @ParameterizedTest
     @ValueSource(ints = {0,1,2,3,4, 5,6,7,8,9,10,11})
     public void Dado_horario_matinal_Quando_salvar_Entao_deve_retornar_bom_dia(int hora) {
-        assertEquals("Bom dia", SaudacaoUtil.saudar(hora));
+        String saudacao = SaudacaoUtil.saudar(hora);
+
+        assertEquals("Bom dia", saudacao);
+
+        assertThat(saudacao).isEqualTo("Bom dia").withFailMessage("Saudação incorreta!");
     }
 
     @ParameterizedTest
