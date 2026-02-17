@@ -36,14 +36,11 @@ class CadastroPostTest {
     @Captor
     ArgumentCaptor<Notificacao> notificacaoArgumentCaptor;
 
-    @Spy
-    Editor editor = new Editor(1L, "Carlos", "carlos@gmail.com", BigDecimal.TEN, true);
-
     @Nested
     class Cadastro {
 
         @Spy
-        Post post = new Post("Olá mundo Java", "Olá mundo Java conteudo", editor, true, true);
+        Post post = PostTestData.umPostNovo().build();
 
         @Test
         void Dado_um_post_valido_Quando_cadastrar_Entao_deve_salvar() {
@@ -174,7 +171,7 @@ class CadastroPostTest {
     class Edicao {
 
         @Spy
-        Post post = new Post(1L, "Olá mundo Java", "Olá mundo Java conteudo", editor, "ola-mundo-java", new Ganhos(BigDecimal.TEN, 8, BigDecimal.TEN), true, true);
+        Post post = PostTestData.umPostExistente().build();
 
         @Test
         public void Dado_um_post_valido_Quando_editar_Entao_deve_salvar() {
@@ -256,7 +253,7 @@ class CadastroPostTest {
 
         @Test
         public void Dado_um_post_valido_Quando_editar_Entao_deve_deve_alterar_post_salvo() {
-            Post postAlterado = new Post(1L, "Olá Java", "Olá Java", editor, "ola-mundo-java", new Ganhos(BigDecimal.TEN, 4, BigDecimal.valueOf(10)), true, true);
+            Post postAlterado = PostTestData.umPostExistente().build();
 
             when(armazenamentoPost.salvar(any(Post.class)))
                     .then(invocacao -> invocacao.getArgument(0, Post.class));
