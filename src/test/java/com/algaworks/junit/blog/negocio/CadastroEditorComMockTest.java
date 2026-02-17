@@ -36,7 +36,7 @@ public class CadastroEditorComMockTest {
     class CadastroComEditorValido {
 
         @Spy
-        Editor editor = EditorTestData.umEditorNovo();
+        Editor editor = EditorTestData.umEditorNovo().build();
 
         @BeforeEach
         void init() {
@@ -94,7 +94,7 @@ public class CadastroEditorComMockTest {
                     .thenReturn(Optional.empty())
                     .thenReturn(Optional.of(editor));
 
-            Editor editorComEmailExistente = EditorTestData.umEditorNovo();
+            Editor editorComEmailExistente = EditorTestData.umEditorNovo().build();
 
             cadastroEditor.criar(editor);
 
@@ -127,7 +127,7 @@ public class CadastroEditorComMockTest {
     class EdicaoComEditorValido {
 
         @Spy
-        Editor editor = EditorTestData.umEditorExistente();
+        Editor editor = EditorTestData.umEditorExistente().build();
 
         @BeforeEach
         void init() {
@@ -137,10 +137,10 @@ public class CadastroEditorComMockTest {
 
         @Test
         void Dado_um_editor_valido_Quando_editar_Entao_deve_alterar_editor_salvo() {
-            Editor editorAtualizado = EditorTestData.umEditorExistente();
-
-            editorAtualizado.setValorPagoPorPalavra(BigDecimal.ZERO);
-            editorAtualizado.setPremium(false);
+            Editor editorAtualizado = EditorTestData.umEditorExistente()
+                    .valorPagoPorPalavra(BigDecimal.ZERO)
+                    .premium(false)
+                    .build();
 
             cadastroEditor.editar(editorAtualizado);
 
@@ -156,7 +156,7 @@ public class CadastroEditorComMockTest {
     @Nested
     class EdicaoComEditorInexistente {
 
-        Editor editor = EditorTestData.umEditorInexistente();
+        Editor editor = EditorTestData.umEditorInexistente().build();
 
         @BeforeEach
         void init() {

@@ -8,15 +8,21 @@ public class EditorTestData {
 
     private EditorTestData() {}
 
-    public static Editor umEditorNovo() {
-        return new Editor(null, "Carlos", "carlos@gmail.com", BigDecimal.TEN, true);
+    public static Editor.Builder umEditorNovo() {
+        return Editor.builder()
+                .nome("Carlos")
+                .email("carlos@gmail.com")
+                .valorPagoPorPalavra(BigDecimal.TEN)
+                .premium(true);
     }
 
-    public static Editor umEditorExistente() {
-        return new Editor(1L, "Carlos", "carlos@gmail.com", BigDecimal.TEN, true);
+    public static Editor.Builder umEditorExistente() {
+        return umEditorNovo()
+                .id(1L);
     }
 
-    public static Editor umEditorInexistente() {
-        return new Editor(100L, "Carlos", "carlos@gmail.com", BigDecimal.TEN, true);
+    public static Editor.Builder umEditorInexistente() {
+        return umEditorNovo()
+                .id(100L);
     }
 }
