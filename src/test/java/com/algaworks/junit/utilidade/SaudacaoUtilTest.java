@@ -5,6 +5,9 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.DisabledIfEnvironmentVariable;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
+import org.junit.jupiter.params.shadow.com.univocity.parsers.annotations.Validate;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -48,5 +51,23 @@ class SaudacaoUtilTest {
         assertEquals("Hora inválida", assertThrows(IllegalArgumentException.class, () -> SaudacaoUtil.saudar(-1)).getMessage());
         assertEquals("Hora inválida", assertThrows(IllegalArgumentException.class, () -> SaudacaoUtil.saudar(24)).getMessage());
 
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {0,1,2,3,4, 5,6,7,8,9,10,11})
+    public void Dado_horario_matinal_Quando_salvar_Entao_deve_retornar_bom_dia(int hora) {
+        assertEquals("Bom dia", SaudacaoUtil.saudar(hora));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {12,13,14,15,16,17})
+    public void Dado_horario_tarde_Quando_salvar_Entao_deve_retornar_boa_tarde(int hora) {
+        assertEquals("Boa tarde", SaudacaoUtil.saudar(hora));
+    }
+
+    @ParameterizedTest
+    @ValueSource(ints = {18,19,20,21,22,23})
+    public void Dado_horario_noite_Quando_salvar_Entao_deve_retornar_boa_noite(int hora) {
+        assertEquals("Boa noite", SaudacaoUtil.saudar(hora));
     }
 }
