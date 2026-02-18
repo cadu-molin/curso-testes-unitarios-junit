@@ -1,5 +1,6 @@
 package com.algaworks.junit.utilidade;
 
+import org.assertj.core.api.Condition;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -80,12 +81,16 @@ class SaudacaoUtilTest {
     @ParameterizedTest
     @ValueSource(ints = {12,13,14,15,16,17})
     public void Dado_horario_tarde_Quando_salvar_Entao_deve_retornar_boa_tarde(int hora) {
-        assertEquals("Boa tarde", SaudacaoUtil.saudar(hora));
+        //assertEquals("Boa tarde", SaudacaoUtil.saudar(hora));
+
+        assertThat(SaudacaoUtil.saudar(hora)).is(SaudacaoUtilConditions.igualBoaTarde());
     }
 
     @ParameterizedTest
     @ValueSource(ints = {18,19,20,21,22,23})
     public void Dado_horario_noite_Quando_salvar_Entao_deve_retornar_boa_noite(int hora) {
-        assertEquals("Boa noite", SaudacaoUtil.saudar(hora));
+//        assertEquals("Boa noite", SaudacaoUtil.saudar(hora));
+
+        assertThat(SaudacaoUtil.saudar(hora)).is(SaudacaoUtilConditions.igualBoaNoite());
     }
 }
