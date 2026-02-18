@@ -44,9 +44,22 @@ class SaudacaoUtilTest {
     @Test
     @DisplayName("Deve lançar exceção quando a hora for inválida")
     public void deveLancarExcecaoQuandoHoraForInvalida() {
-        assertEquals("Hora inválida", assertThrows(IllegalArgumentException.class, () -> SaudacaoUtil.saudar(-1)).getMessage());
-        assertEquals("Hora inválida", assertThrows(IllegalArgumentException.class, () -> SaudacaoUtil.saudar(24)).getMessage());
+//        assertEquals("Hora inválida", assertThrows(IllegalArgumentException.class, () -> SaudacaoUtil.saudar(-1)).getMessage());
+//        assertEquals("Hora inválida", assertThrows(IllegalArgumentException.class, () -> SaudacaoUtil.saudar(24)).getMessage());
 
+//        IllegalArgumentException saudacaoInvalidaNegativa = catchThrowableOfType(() -> SaudacaoUtil.saudar(-1), IllegalArgumentException.class);
+//        IllegalArgumentException saudacaoInvalidaPositiva = catchThrowableOfType(() -> SaudacaoUtil.saudar(24), IllegalArgumentException.class);
+//
+//        assertThat(saudacaoInvalidaNegativa).hasMessage("Hora inválida");
+//        assertThat(saudacaoInvalidaPositiva).hasMessage("Hora inválida");
+
+        assertThatThrownBy(() -> SaudacaoUtil.saudar(-1))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Hora inválida");
+
+        assertThatThrownBy(() -> SaudacaoUtil.saudar(24))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage("Hora inválida");
     }
 
     @ParameterizedTest
